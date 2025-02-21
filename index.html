@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Inference</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        input { margin: 10px; }
+        img { max-width: 300px; display: block; margin: 10px auto; }
+        #result { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <h2>Upload an Image for Inference</h2>
+    <input type="file" id="imageInput">
+    <button onclick="uploadImage()">Submit</button>
+    <img id="preview" src="#" alt="Image Preview" style="display:none;">
+    <div id="result"></div>
+
+    <script>
+        async function uploadImage() {
+            let input = document.getElementById("imageInput");
+            let file = input.files[0];
+
+            if (!file) {
+                alert("Please select an image first!");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                let response = await fetch("http://localhost:8080/inference", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                let result = await response.json(); // Parse JSON response
+
+                // Show results
+                let outputDiv = document.getElementById("result");
+                outputDiv.innerHTML = ""; // Clear previous results
+
+                if (result.predictions) {
+                    result.predictions.forEach(prediction => {
+                        let p = document.createElement("p");
+                        p.textContent = `${prediction.label} (${prediction.probability}%)`;
+                        outputDiv.appendChild(p);
+                    });
+                } else {
+                    outputDiv.innerHTML = "<p>No results!</p>";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("result").innerHTML = "<p>Error sending request!</p>";
+            }
+        }
+    </script>
+
+</body>
+</html>

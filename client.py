@@ -30,8 +30,16 @@ results = client.infer(model_name="densenet_onnx", inputs=[inputs], outputs=[out
 inference_output = results.as_numpy('fc6_1').astype(str)
 
 # Show the top 5 classes
-output = np.squeeze(inference_output)[:5]
+output = np.squeeze(inference_output)[:10]
 
 print("Top 5 classes:")
-for i, prob in enumerate(output):
-    print(f"{i+1}: {prob}")
+for i, line in enumerate(output):
+    parts = line.split(":") 
+    if len(parts) < 3:
+        print(f"Error `{line}`")
+        continue
+    
+    prob = round(float(parts[0]), 2)  
+    result = parts[2].strip() 
+
+    print(f"{i+1} - {result} with {prob}%")
